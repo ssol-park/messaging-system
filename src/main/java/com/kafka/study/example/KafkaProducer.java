@@ -18,4 +18,10 @@ public class KafkaProducer {
     public void sendMessage(String message) {
         kafkaTemplate.send(topic, message);
     }
+
+    public void sendMessage(int partition, String message) {
+        String key = "key" + partition;
+
+        kafkaTemplate.send(topic, partition, key, message);
+    }
 }
