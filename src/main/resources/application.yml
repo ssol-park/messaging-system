@@ -14,4 +14,10 @@ spring:
 
 kafka:
   topic: psr-topic
-  group-idj: psr-group
+  group-id: psr-group
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.kafka: DEBUG
