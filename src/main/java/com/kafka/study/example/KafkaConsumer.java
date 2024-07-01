@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaConsumer {
 
-    @KafkaListener(topics = "${kafka.topic}", groupId = "${kafka.group-id}")
+    @KafkaListener(topics = "${kafka.topic.name}", groupId = "${kafka.group-id}")
     public void listen(String message,
                        @Header(KafkaHeaders.RECEIVED_PARTITION)  int partition,
                        @Header(KafkaHeaders.OFFSET)  int offset) {

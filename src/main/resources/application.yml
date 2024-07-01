@@ -15,11 +15,13 @@ spring:
       default-topic: psr-topic
 
 kafka:
-  topic: psr-topic
+  topic:
+    replication-factor: 3
+    name: psr-topic
   group-id: psr-group
 
 logging:
   level:
     root: INFO
     org.springframework.web: DEBUG
-    org.springframework.kafka: DEBUG
+    org.springframework.kafka: INFO
