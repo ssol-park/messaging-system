@@ -8,14 +8,22 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TopicConfig {
 
-    @Value("${kafka.topic.replication-factor}")
+    @Value("${kafka.replication-factor}")
     private short replicationFactor;
 
-    @Value("${kafka.topic.name}")
-    private String topic;
+    @Value("${kafka.psr-topic.name}")
+    private String psrTopic;
+
+    @Value("${kafka.raw-scrap-data.name}")
+    private String rawScrapData;
 
     @Bean
     public NewTopic psrTopic() {
-        return new NewTopic(topic, 1, replicationFactor);
+        return new NewTopic(psrTopic, 2, replicationFactor);
+    }
+
+    @Bean
+    public NewTopic rawScrapDataTopic() {
+        return new NewTopic(rawScrapData, 2, replicationFactor);
     }
 }

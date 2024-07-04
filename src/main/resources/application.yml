@@ -15,14 +15,16 @@ spring:
     listener:
       missing-topics-fatal: false
       concurrency: 3
-    template:
-      default-topic: psr-topic
 
 kafka:
-  topic:
-    replication-factor: 3
+  replication-factor: 3
+  psr-topic:
     name: psr-topic
-  group-id: psr-group
+    group-id: psr-group
+
+  raw-scrap-data:
+    name: raw-scrap-data
+    group-id: raw-scrap-group
 
 logging:
   level:
