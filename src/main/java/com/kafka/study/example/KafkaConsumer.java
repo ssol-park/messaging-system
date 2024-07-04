@@ -13,11 +13,18 @@ import java.util.UUID;
 public class KafkaConsumer {
 
     private final String instanceId = UUID.randomUUID().toString();
-    @KafkaListener(topics = "${kafka.topic.name}", groupId = "${kafka.group-id}")
-    public void listen(String message,
+    @KafkaListener(topics = "${kafka.psr-topic.name}", groupId = "${kafka.psr-topic.group-id}")
+    public void psrListen(String message,
                        @Header(KafkaHeaders.RECEIVED_PARTITION)  int partition,
                        @Header(KafkaHeaders.OFFSET)  int offset) {
-        log.info("instanceId:{}, Received message: {}, partition: {}, offset: {}", instanceId, message, partition, offset);
+        log.info("[psrListen] instanceId:{}, Received message: {}, partition: {}, offset: {}", instanceId, message, partition, offset);
+    }
+
+    @KafkaListener(topics = "${kafka.raw-scrap-data.name}", groupId = "${kafka.raw-scrap-data.group-id}")
+    public void rawScrapDataListen(String message,
+                       @Header(KafkaHeaders.RECEIVED_PARTITION)  int partition,
+                       @Header(KafkaHeaders.OFFSET)  int offset) {
+        log.info("[rawScrapDataListen] instanceId:{}, Received message: {}, partition: {}, offset: {}", instanceId, message, partition, offset);
     }
 }
 

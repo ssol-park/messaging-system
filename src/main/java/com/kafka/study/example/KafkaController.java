@@ -15,4 +15,10 @@ public class KafkaController {
         kafkaProducer.sendMessage(message);
         return "Message sent to topic";
     }
+
+    @GetMapping("/scrap")
+    public String scrapData() {
+        kafkaProducer.sendRawScrapData();
+        return "scrapData";
+    }
 }
