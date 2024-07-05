@@ -20,8 +20,8 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${spring.kafka.consumer.group-id}")
-    private String groupId;
+    @Value("${kafka.consumer-groups.raw-scrap-group}")
+    private String scrapGroupId;
 
     @Value("${spring.kafka.consumer.auto-offset-reset}")
     private String autoOffsetReset;
@@ -29,27 +29,49 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.listener.concurrency}")
     private int concurrency;
 
-    public Map<String, Object> consumerConfigs() {
+    private Map<String, Object> commonConfigs() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return props;
     }
 
-    @Bean
-    public ConsumerFactory<String, String> consumerFactory() {
-        return new DefaultKafkaConsumerFactory<>(consumerConfigs());
+    private Map<String, Object> consumerConfig(String groupId) {
+        Map<String, Object> props = commonConfigs();
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+
+        return props;
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
+    private ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(String groupId) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(consumerConfig(groupId)));
         factory.setConcurrency(concurrency);
 
         return factory;
     }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> scrapKafkaListenerContainerFactory() {
+        return kafkaListenerContainerFactory(scrapGroupId);
+    }
+
+    /*
+    @Value("${kafka.consumer.data.group-id}")
+    private String dataGroupId;
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> dataKafkaListenerContainerFactory() {
+        return kafkaListenerContainerFactory(dataGroupId);
+    }
+
+    @Value("${kafka.consumer.db.group-id}")
+    private String dbGroupId;
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> dbKafkaListenerContainerFactory() {
+        return kafkaListenerContainerFactory(dbGroupId);
+    }*/
 }
