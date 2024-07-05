@@ -1,24 +1,20 @@
 package com.kafka.study.example;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class KafkaController {
-    private final KafkaProducer kafkaProducer;
+    private final KafkaService kafkaService;
 
-    public KafkaController(KafkaProducer kafkaProducer) {
-        this.kafkaProducer = kafkaProducer;
-    }
-
-    @GetMapping("/send")
-    public String sendMessage(@RequestParam String message) {
-        kafkaProducer.sendMessage(message);
-        return "Message sent to topic";
+    public KafkaController(KafkaService kafkaService) {
+        this.kafkaService = kafkaService;
     }
 
     @GetMapping("/scrap")
-    public String scrapData() {
-        kafkaProducer.sendRawScrapData();
-        return "scrapData";
+    public ResponseEntity<Void> scrapData() {
+        kafkaService.scrapData();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

@@ -11,10 +11,9 @@ import java.io.IOException;
 @Service
 public class ScrapService {
 
-    public String getJsonData() {
+    public Document getScrapData(String postId) {
         try {
-            Document doc = Jsoup.connect("https://jsonplaceholder.typicode.com/posts").ignoreContentType(true).get();
-            return doc.body().text();
+            return Jsoup.connect("https://jsonplaceholder.typicode.com/posts/" + postId).ignoreContentType(true).get();
 
         } catch (IOException e) {
             log.error("Failed to scrap data.");

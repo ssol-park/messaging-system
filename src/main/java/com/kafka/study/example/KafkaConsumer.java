@@ -1,6 +1,7 @@
 package com.kafka.study.example;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.nodes.Document;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -13,18 +14,18 @@ import java.util.UUID;
 public class KafkaConsumer {
 
     private final String instanceId = UUID.randomUUID().toString();
-    @KafkaListener(topics = "${kafka.psr-topic.name}", groupId = "${kafka.psr-topic.group-id}")
-    public void psrListen(String message,
-                       @Header(KafkaHeaders.RECEIVED_PARTITION)  int partition,
-                       @Header(KafkaHeaders.OFFSET)  int offset) {
-        log.info("[psrListen] instanceId:{}, Received message: {}, partition: {}, offset: {}", instanceId, message, partition, offset);
+    private final ScrapService scrapService;
+
+    public KafkaConsumer(ScrapService scrapService) {
+        this.scrapService = scrapService;
     }
 
-    @KafkaListener(topics = "${kafka.raw-scrap-data.name}", groupId = "${kafka.raw-scrap-data.group-id}")
-    public void rawScrapDataListen(String message,
+    @KafkaListener(topics = "${kafka.topics.raw-scrap-data}", groupId = "${kafka.consumer-groups.raw-scrap-group}")
+    public void rawScrapDataListen(String postId,
                        @Header(KafkaHeaders.RECEIVED_PARTITION)  int partition,
                        @Header(KafkaHeaders.OFFSET)  int offset) {
-        log.info("[rawScrapDataListen] instanceId:{}, Received message: {}, partition: {}, offset: {}", instanceId, message, partition, offset);
+        Document doc = scrapService.getScrapData(postId);
+        log.info("[rawScrapDataListen] instanceId:{}, Received message: {}, partition: {}, offset: {}", instanceId, doc.text(), partition, offset);
     }
 }
 
