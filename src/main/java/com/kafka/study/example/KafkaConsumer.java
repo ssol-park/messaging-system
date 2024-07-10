@@ -1,5 +1,7 @@
 package com.kafka.study.example;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,9 +16,11 @@ import java.util.UUID;
 public class KafkaConsumer {
 
     private final String instanceId = UUID.randomUUID().toString();
+    private final KafkaProducer kafkaProducer;
     private final ScrapService scrapService;
 
-    public KafkaConsumer(ScrapService scrapService) {
+    public KafkaConsumer(KafkaProducer kafkaProducer, ScrapService scrapService) {
+        this.kafkaProducer = kafkaProducer;
         this.scrapService = scrapService;
     }
 
@@ -24,8 +28,21 @@ public class KafkaConsumer {
     public void rawScrapDataListen(String postId,
                        @Header(KafkaHeaders.RECEIVED_PARTITION)  int partition,
                        @Header(KafkaHeaders.OFFSET)  int offset) {
+
         Document doc = scrapService.getScrapData(postId);
         log.info("[rawScrapDataListen] instanceId:{}, Received message: {}, partition: {}, offset: {}", instanceId, doc.text(), partition, offset);
+
+        kafkaProducer.processData(doc);
+    }
+
+    @KafkaListener(topics = "${kafka.topics.processed-data}", groupId = "${kafka.consumer-groups.processed-data-group}")
+    public void processedDataListen(String data,
+                                   @Header(KafkaHeaders.RECEIVED_PARTITION)  int partition,
+                                   @Header(KafkaHeaders.OFFSET)  int offset) {
+
+        log.info("[processedDataListen] instanceId:{}, partition: {}, offset: {} data:{}", instanceId, partition, offset, data);
+
+        // TODO :: 가공 로직
     }
 }
 
