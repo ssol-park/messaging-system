@@ -34,9 +34,9 @@ public class KafkaProducer {
                 });
     }
 
-    public void processData(Document doc) {
+    public void processData(String html) {
         // TODO :: Document 객체를 어디서 어떻게 처리 할 지 고민 필요. Serializer/Deserializer
-        kafkaTemplate.send(processedDataTopic, doc.body().data()).thenAccept(result -> {
+        kafkaTemplate.send(processedDataTopic, html).thenAccept(result -> {
                     RecordMetadata metadata = result.getRecordMetadata();
                     log.info("Sent uri:'{}' to topic:{} partition:{} offset:{}", metadata.topic(), metadata.partition(), metadata.offset());
                 })

@@ -3,6 +3,7 @@ package com.kafka.study.example;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -10,6 +11,8 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+
+import static org.jsoup.nodes.Document.OutputSettings.Syntax.html;
 
 @Slf4j
 @Service
@@ -29,10 +32,10 @@ public class KafkaConsumer {
                        @Header(KafkaHeaders.RECEIVED_PARTITION)  int partition,
                        @Header(KafkaHeaders.OFFSET)  int offset) {
 
-        Document doc = scrapService.getScrapData(postId);
-        log.info("[rawScrapDataListen] instanceId:{}, Received message: {}, partition: {}, offset: {}", instanceId, doc.text(), partition, offset);
+        String html = scrapService.getScrapData(postId).html();
+        log.info("[rawScrapDataListen] instanceId:{}, Received message: {}, partition: {}, offset: {}", instanceId, html, partition, offset);
 
-        kafkaProducer.processData(doc);
+        kafkaProducer.processData(html);
     }
 
     @KafkaListener(topics = "${kafka.topics.processed-data}", groupId = "${kafka.consumer-groups.processed-data-group}")
@@ -40,7 +43,11 @@ public class KafkaConsumer {
                                    @Header(KafkaHeaders.RECEIVED_PARTITION)  int partition,
                                    @Header(KafkaHeaders.OFFSET)  int offset) {
 
-        log.info("[processedDataListen] instanceId:{}, partition: {}, offset: {} data:{}", instanceId, partition, offset, data);
+        Document document = Jsoup.parse(data);
+
+        log.info("[processedDataListen] instanceId:{}, partition: {}, offset: {} data:{}", instanceId, partition, offset, document);
+        log.info("Body ::: {}", document.body());
+        log.info("Body data ::: {}", document.body().text());
 
         // TODO :: 가공 로직
     }
