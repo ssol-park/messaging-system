@@ -2,6 +2,9 @@ server:
   port: 8080
 
 spring:
+  profiles:
+    active: default
+
   kafka:
     bootstrap-servers: kafka1:9092,kafka2:9093,kafka3:9094
     consumer:
