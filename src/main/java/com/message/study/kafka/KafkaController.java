@@ -1,8 +1,9 @@
-package com.kafka.study.example;
+package com.message.study.kafka;
 
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/kafka")
 public class KafkaController {
     private final KafkaProducer kafkaProducer;
 
