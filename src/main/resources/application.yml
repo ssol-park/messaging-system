@@ -14,8 +14,15 @@ spring:
     template:
       default-topic: psr-topic
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
 kafka:
   topic: psr-topic
   group-id: psr-group
+
 
 
