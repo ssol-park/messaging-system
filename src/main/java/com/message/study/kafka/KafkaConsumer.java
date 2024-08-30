@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-import static org.jsoup.nodes.Document.OutputSettings.Syntax.html;
-
 @Slf4j
 @Service
 public class KafkaConsumer {
