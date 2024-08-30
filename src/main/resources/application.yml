@@ -1,8 +1,13 @@
+server:
+  port: 8080
+
 spring:
+  profiles:
+    active: default
+
   kafka:
     bootstrap-servers: kafka1:9092,kafka2:9093,kafka3:9094
     consumer:
-      group-id: psr-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -11,8 +16,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     listener:
       missing-topics-fatal: false
-    template:
-      default-topic: psr-topic
+      concurrency: 3
 
   rabbitmq:
     host: localhost
@@ -21,8 +25,20 @@ spring:
     password: guest
 
 kafka:
-  topic: psr-topic
-  group-id: psr-group
+  replication-factor: 3
 
+  topics:
+    raw-scrap-data: raw-scrap-data
+    processed-data: processed-data
+    db-data: db-data
 
+  consumer-groups:
+    raw-scrap-group: raw-scrap-group
+    processed-data-group: processed-data-group
+    db-data-group: db-data-group
 
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.kafka: INFO
