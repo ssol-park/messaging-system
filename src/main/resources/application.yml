@@ -24,6 +24,25 @@ spring:
     username: guest
     password: guest
 
+    direct:
+      exchange: direct_exchange
+      queue: direct_queue
+      routing-key: direct_routing_key
+
+      topic:
+        exchange: topic_exchange
+        queue: topic_queue
+        routing-key: topic.routing.#
+
+      fanout:
+        exchange: fanout_exchange
+        queue1: fanout_queue_1
+        queue2: fanout_queue_2
+
+      headers:
+        exchange: headers_exchange
+        queue: headers_queue
+
 kafka:
   replication-factor: 3
 
