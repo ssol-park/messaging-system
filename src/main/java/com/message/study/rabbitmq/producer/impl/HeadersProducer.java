@@ -3,7 +3,9 @@ package com.message.study.rabbitmq.producer.impl;
 import com.message.study.rabbitmq.config.RabbitMQProperties;
 import com.message.study.rabbitmq.producer.RabbitMQMessageSender;
 import com.message.study.rabbitmq.producer.RabbitMQProducer;
+import org.springframework.stereotype.Service;
 
+@Service
 public class HeadersProducer implements RabbitMQProducer {
 
     private final RabbitMQMessageSender messageSender;
