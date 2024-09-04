@@ -1,4 +1,4 @@
-package com.message.study.kafka;
+package com.kafka;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;

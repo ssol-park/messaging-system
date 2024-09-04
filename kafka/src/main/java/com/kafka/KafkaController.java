@@ -1,4 +1,4 @@
-package com.message.study.kafka;
+package com.kafka;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

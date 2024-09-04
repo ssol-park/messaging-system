@@ -1,6 +1,3 @@
-server:
-  port: 8080
-
 spring:
   profiles:
     active: default
@@ -18,31 +15,6 @@ spring:
       missing-topics-fatal: false
       concurrency: 3
 
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-
-    direct:
-      exchange: direct_exchange
-      queue: direct_queue
-      routing-key: direct_routing_key
-
-    topic:
-      exchange: topic_exchange
-      queue: topic_queue
-      routing-key: topic.routing.#
-
-    fanout:
-      exchange: fanout_exchange
-      queue1: fanout_queue_1
-      queue2: fanout_queue_2
-
-    headers:
-      exchange: headers_exchange
-      queue: headers_queue
-
 kafka:
   replication-factor: 3
 
@@ -56,8 +28,4 @@ kafka:
     processed-data-group: processed-data-group
     db-data-group: db-data-group
 
-logging:
-  level:
-    root: INFO
-    org.springframework.web: DEBUG
-    org.springframework.kafka: INFO
+
