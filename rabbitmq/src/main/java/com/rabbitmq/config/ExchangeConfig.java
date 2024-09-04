@@ -1,4 +1,4 @@
-package com.message.study.rabbitmq.config;
+package com.rabbitmq.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
@@ -41,13 +41,23 @@ public class ExchangeConfig {
     }
 
     @Bean
-    public Queue topicQueue() {
-        return new Queue(rabbitMQProperties.getTopic().getQueue(), true);
+    public Queue errorQueue() {
+        return new Queue(rabbitMQProperties.getTopic().getErrorQueue(), true);
     }
 
     @Bean
-    public Binding topicBinding(TopicExchange topicExchange, Queue topicQueue) {
-        return BindingBuilder.bind(topicQueue).to(topicExchange).with(rabbitMQProperties.getTopic().getRoutingKey());
+    public Queue allLogsQueue() {
+        return new Queue(rabbitMQProperties.getTopic().getAllLogsQueue(), true);
+    }
+
+    @Bean
+    public Binding errorBinding(TopicExchange topicExchange, Queue errorQueue) {
+        return BindingBuilder.bind(errorQueue).to(topicExchange).with(rabbitMQProperties.getTopic().getErrorRoutingKey());
+    }
+
+    @Bean
+    public Binding allLogsBinding(TopicExchange topicExchange, Queue allLogsQueue) {
+        return BindingBuilder.bind(allLogsQueue).to(topicExchange).with(rabbitMQProperties.getTopic().getAllLogsRoutingKey());
     }
 
 }

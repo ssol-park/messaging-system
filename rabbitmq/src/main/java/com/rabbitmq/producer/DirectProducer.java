@@ -1,15 +1,15 @@
-package com.message.study.rabbitmq.producer;
+package com.rabbitmq.producer;
 
-import com.message.study.rabbitmq.config.RabbitMQProperties;
+import com.rabbitmq.config.RabbitMQProperties;
 import org.springframework.stereotype.Service;
 
 @Service
-public class HeadersProducer {
+public class DirectProducer {
 
     private final RabbitMQMessageSender messageSender;
     private final RabbitMQProperties properties;
 
-    public HeadersProducer(RabbitMQMessageSender messageSender, RabbitMQProperties properties) {
+    public DirectProducer(RabbitMQMessageSender messageSender, RabbitMQProperties properties) {
         this.messageSender = messageSender;
         this.properties = properties;
     }

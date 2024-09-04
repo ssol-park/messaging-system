@@ -1,4 +1,4 @@
-package com.message.study.rabbitmq.config;
+package com.rabbitmq.config;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +32,10 @@ public class RabbitMQProperties {
     @RequiredArgsConstructor
     public static class Topic {
         private final String exchange;
-        private final String queue;
-        private final String routingKey;
+        private final String errorQueue;
+        private final String allLogsQueue;
+        private final String errorRoutingKey;
+        private final String allLogsRoutingKey;
     }
 
     @Getter

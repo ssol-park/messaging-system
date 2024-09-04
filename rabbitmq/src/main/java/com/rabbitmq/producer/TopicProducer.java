@@ -1,6 +1,6 @@
-package com.message.study.rabbitmq.producer;
+package com.rabbitmq.producer;
 
-import com.message.study.rabbitmq.config.RabbitMQProperties;
+import com.rabbitmq.config.RabbitMQProperties;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,4 +14,8 @@ public class TopicProducer {
         this.properties = properties;
     }
 
+    public void sendMessage(String service, String logLevel, String message) {
+        String routingKey = service + "." + logLevel + ".log";
+        messageSender.sendMessage(properties.getTopic().getExchange(), routingKey, message);
+    }
 }
