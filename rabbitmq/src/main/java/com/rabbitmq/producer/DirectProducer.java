@@ -1,5 +1,6 @@
 package com.rabbitmq.producer;
 
+import com.rabbitmq.config.RabbitMQMessageSender;
 import com.rabbitmq.config.RabbitMQProperties;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.rabbitmq.producer;
+package com.rabbitmq.config;
 
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
