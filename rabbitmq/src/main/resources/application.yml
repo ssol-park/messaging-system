@@ -2,6 +2,11 @@ spring:
   profiles:
     active: default
 
+  config:
+    import:
+      - classpath:/application-local-01.yml
+      - classpath:/application-local-02.yml
+
   rabbitmq:
     host: localhost
     port: 5672

@@ -1,0 +1,6 @@
+rabbitmq:
+  routing-key: routingKey-02
+  queue: queue-02
+
+server:
+  port: 8081
