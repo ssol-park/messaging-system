@@ -1,7 +1,6 @@
 package com.rabbitmq.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -12,8 +11,17 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.RetryPolicy;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.policy.ExceptionClassifierRetryPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import java.net.SocketTimeoutException;
+import java.rmi.ConnectIOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 @Slf4j
@@ -21,9 +29,11 @@ import java.util.concurrent.TimeoutException;
 public class RabbitMQConfig {
 
     private final RabbitMQProperties rabbitMQProperties;
+    private final CustomErrorHandler customErrorHandler;
 
-    public RabbitMQConfig(RabbitMQProperties rabbitMQProperties) {
+    public RabbitMQConfig(RabbitMQProperties rabbitMQProperties, CustomErrorHandler customErrorHandler) {
         this.rabbitMQProperties = rabbitMQProperties;
+        this.customErrorHandler = customErrorHandler;
     }
 
     @Bean
@@ -64,7 +74,6 @@ public class RabbitMQConfig {
         rabbitTemplate.setMessageConverter(jsonMessageConverter);
         return rabbitTemplate;
     }
-
 
     @Bean
     public ThreadPoolTaskExecutor taskExecutor() {
@@ -114,17 +123,8 @@ public class RabbitMQConfig {
         // 11. 메시지 처리 후 유휴 상태 시 이벤트 발생 간격 설정 (기본값: 60000ms)
         factory.setIdleEventInterval(10000L); // 메시지가 없는 유휴 상태에서 이벤트가 발생하는 간격 (60초)
 
-        // 12. ErrorHandler 설정 (기본값: 없음)
-        factory.setErrorHandler(e -> {
-            log.error("[RabbitListenerContainerFactory] {}", e.getMessage());
-
-            if (e instanceof TimeoutException) {
-                // 재시도 처리할 Exception 처리
-            }else {
-                // 재시도 하지 않음
-                throw new AmqpRejectAndDontRequeueException("메시지 처리에 실패하여 재시도하지 않습니다.");
-            }
-        });
+        factory.setRetryTemplate(retryTemplate());
+        factory.setErrorHandler(customErrorHandler);
 
         // 13. Consumer 태그 설정 (기본값: 자동 생성)
 //        factory.setConsumerTagStrategy(queue -> "MyConsumerTag_" + queue); // 각 소비자에 대해 고유한 태그 부여
@@ -132,5 +132,34 @@ public class RabbitMQConfig {
 
         return factory;
     }
+
+    @Bean
+    public RetryTemplate retryTemplate() {
+        RetryTemplate retryTemplate = new RetryTemplate();
+        retryTemplate.setBackOffPolicy(fixedBackOffPolicy());
+        retryTemplate.setRetryPolicy(exceptionClassifierRetryPolicy());
+        return retryTemplate;
+    }
+
+    @Bean
+    public FixedBackOffPolicy fixedBackOffPolicy() {
+        FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
+        fixedBackOffPolicy.setBackOffPeriod(3000);
+        return fixedBackOffPolicy;
+    }
+
+    @Bean
+    public ExceptionClassifierRetryPolicy exceptionClassifierRetryPolicy() {
+        ExceptionClassifierRetryPolicy retryPolicy = new ExceptionClassifierRetryPolicy();
+        Map<Class<? extends Throwable>, RetryPolicy> policyMap = new HashMap<>();
+
+        SimpleRetryPolicy policy = new SimpleRetryPolicy(1);
+        policyMap.put(ConnectIOException.class, policy);
+        policyMap.put(SocketTimeoutException.class, policy);
+
+        retryPolicy.setPolicyMap(policyMap);
+        return retryPolicy;
+    }
+
 
 }
