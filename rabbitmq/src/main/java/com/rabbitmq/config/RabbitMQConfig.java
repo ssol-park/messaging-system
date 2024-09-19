@@ -22,7 +22,6 @@ import java.net.SocketTimeoutException;
 import java.rmi.ConnectIOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Configuration
@@ -94,10 +93,10 @@ public class RabbitMQConfig {
         factory.setConnectionFactory(connectionFactory);
 
         // 2. 동시 처리 스레드 수 (기본값: 1) // 기본적으로 3개의 스레드가 동시에 메시지를 처리
-        factory.setConcurrentConsumers(1);
+        factory.setConcurrentConsumers(3);
 
         // 3. 최대 동시 처리 스레드 수 (기본값: 제한 없음) // 필요 시 최대 10개의 스레드로 동적 확장
-        factory.setMaxConcurrentConsumers(5);
+        factory.setMaxConcurrentConsumers(10);
 
         // 4. Prefetch Count (기본값: 1) // 각 스레드는 한 번에 5개의 메시지를 가져와 처리
         factory.setPrefetchCount(3);
