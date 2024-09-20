@@ -9,13 +9,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class TopicConsumer {
 
-    @RabbitListener(queues =  "error-queue")
-    public void receiveErrorLogs(String message) {
+    @RabbitListener(queues =  "error-queue", id = "receiveErrorLogsId")
+    public String receiveErrorLogs(String message) {
         log.error("[TopicConsumer] ERROR :: {}", message);
+        return message;
     }
 
     @RabbitListener(queues = "all-logs-queue")
-    public void receiveAllLogs(String message) {
+    public String receiveAllLogs(String message) {
         log.info("[TopicConsumer] INFO :: {}", message);
+        return message;
     }
 }
