@@ -15,8 +15,4 @@ public class RabbitMQMessageSender {
     public void sendMessage(String exchange, String routingKey, String message) {
         template.convertAndSend(exchange, routingKey, message);
     }
-
-    public void sendMessage(String exchange, String routingKey, String message, MessagePostProcessor messagePostProcessor) {
-        template.convertAndSend(exchange, routingKey, message, messagePostProcessor);
-    }
 }

@@ -1,15 +1,18 @@
 package com.rabbitmq.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.AcknowledgeMode;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.RetryPolicy;
@@ -23,6 +26,7 @@ import java.net.SocketTimeoutException;
 import java.rmi.ConnectIOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Configuration
@@ -34,6 +38,27 @@ public class RabbitMQConfig {
     public RabbitMQConfig(RabbitMQProperties rabbitMQProperties, CustomErrorHandler customErrorHandler) {
         this.rabbitMQProperties = rabbitMQProperties;
         this.customErrorHandler = customErrorHandler;
+    }
+
+    /*
+     * 내구성(durable)
+     *  ture: 서버재시작 및 충돌 시 에도 큐가 삭제되지 않으며 저장된 메세지도 유지됨
+     *  false: 서버재시작 시 큐와, 큐에 저장된 메시지가 사라짐
+     * */
+    // Direct Exchange 설정
+    @Bean
+    public DirectExchange directExchange() {
+        return new DirectExchange(rabbitMQProperties.getDirect().getExchange());
+    }
+
+    @Bean
+    public Queue directQueue() {
+        return new Queue(rabbitMQProperties.getDirect().getQueue(), true);
+    }
+
+    @Bean
+    public Binding directBinding(DirectExchange directExchange, Queue directQueue) {
+        return BindingBuilder.bind(directQueue).to(directExchange).with(rabbitMQProperties.getDirect().getRoutingKey());
     }
 
     @Bean
@@ -100,7 +125,7 @@ public class RabbitMQConfig {
         factory.setMaxConcurrentConsumers(10);
 
         // 4. Prefetch Count (기본값: 1) // 각 스레드는 한 번에 5개의 메시지를 가져와 처리
-        factory.setPrefetchCount(3);
+        factory.setPrefetchCount(5);
 
         // 5. ACK 모드 (기본값: AcknowledgeMode.AUTO) // 자동 ACK, 처리 후 RabbitMQ에 자동으로 메시지 승인
         factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
@@ -123,7 +148,6 @@ public class RabbitMQConfig {
         // 11. 메시지 처리 후 유휴 상태 시 이벤트 발생 간격 설정 (기본값: 60000ms)
         factory.setIdleEventInterval(10000L); // 메시지가 없는 유휴 상태에서 이벤트가 발생하는 간격 (60초)
 
-        factory.setRetryTemplate(retryTemplate());
         factory.setErrorHandler(customErrorHandler);
 
         // 13. Consumer 태그 설정 (기본값: 자동 생성)
@@ -131,40 +155,5 @@ public class RabbitMQConfig {
 
 
         return factory;
-    }
-
-    @Bean
-    public RetryTemplate retryTemplate() {
-        RetryTemplate retryTemplate = new RetryTemplate();
-        retryTemplate.setRetryPolicy(exceptionClassifierRetryPolicy());
-        retryTemplate.setBackOffPolicy(fixedBackOffPolicy());
-        return retryTemplate;
-    }
-
-    @Bean
-    public FixedBackOffPolicy fixedBackOffPolicy() {
-        FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
-        fixedBackOffPolicy.setBackOffPeriod(3000);
-        return fixedBackOffPolicy;
-    }
-
-    @Bean
-    public ExceptionClassifierRetryPolicy exceptionClassifierRetryPolicy() {
-        ExceptionClassifierRetryPolicy retryPolicy = new ExceptionClassifierRetryPolicy();
-
-        Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<>();
-        retryableExceptions.put(ConnectIOException.class, true);  // 이 예외는 재시도
-        retryableExceptions.put(SocketTimeoutException.class, true);  // 이 예외도 재시도
-        retryableExceptions.put(ListenerExecutionFailedException.class, true);
-
-        SimpleRetryPolicy policy = new SimpleRetryPolicy(5, retryableExceptions);
-
-        Map<Class<? extends Throwable>, RetryPolicy> policyMap = new HashMap<>();
-        policyMap.put(ConnectIOException.class, policy);
-        policyMap.put(SocketTimeoutException.class, policy);
-        policyMap.put(ListenerExecutionFailedException.class, policy);
-
-        retryPolicy.setPolicyMap(policyMap);
-        return retryPolicy;
     }
 }

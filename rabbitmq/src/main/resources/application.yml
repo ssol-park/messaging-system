@@ -2,11 +2,6 @@ spring:
   profiles:
     active: default
 
-  config:
-    import:
-      - classpath:/application-local-01.yml
-      - classpath:/application-local-02.yml
-
   rabbitmq:
     host: localhost
     port: 5672
@@ -18,21 +13,6 @@ spring:
       queue: direct-queue
       routing-key: direct-routing-key
 
-    topic:
-      exchange: logs-exchange
-      error-queue: error-queue
-      all-logs-queue: all-logs-queue
-      error-routing-key: "*.error.*"
-      all-logs-routing-key: "#"
-
-    fanout:
-      exchange: fanout-exchange
-      queue1: fanout-queue-1
-      queue2: fanout-queue-2
-
-    headers:
-      exchange: headers-exchange
-      queue: headers-queue
 
 logging:
   level:
