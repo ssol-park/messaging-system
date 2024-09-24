@@ -8,6 +8,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -135,8 +136,8 @@ public class RabbitMQConfig {
     @Bean
     public RetryTemplate retryTemplate() {
         RetryTemplate retryTemplate = new RetryTemplate();
-        retryTemplate.setBackOffPolicy(fixedBackOffPolicy());
         retryTemplate.setRetryPolicy(exceptionClassifierRetryPolicy());
+        retryTemplate.setBackOffPolicy(fixedBackOffPolicy());
         return retryTemplate;
     }
 
@@ -150,15 +151,20 @@ public class RabbitMQConfig {
     @Bean
     public ExceptionClassifierRetryPolicy exceptionClassifierRetryPolicy() {
         ExceptionClassifierRetryPolicy retryPolicy = new ExceptionClassifierRetryPolicy();
-        Map<Class<? extends Throwable>, RetryPolicy> policyMap = new HashMap<>();
 
-        SimpleRetryPolicy policy = new SimpleRetryPolicy(1);
+        Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<>();
+        retryableExceptions.put(ConnectIOException.class, true);  // 이 예외는 재시도
+        retryableExceptions.put(SocketTimeoutException.class, true);  // 이 예외도 재시도
+        retryableExceptions.put(ListenerExecutionFailedException.class, true);
+
+        SimpleRetryPolicy policy = new SimpleRetryPolicy(5, retryableExceptions);
+
+        Map<Class<? extends Throwable>, RetryPolicy> policyMap = new HashMap<>();
         policyMap.put(ConnectIOException.class, policy);
         policyMap.put(SocketTimeoutException.class, policy);
+        policyMap.put(ListenerExecutionFailedException.class, policy);
 
         retryPolicy.setPolicyMap(policyMap);
         return retryPolicy;
     }
-
-
 }

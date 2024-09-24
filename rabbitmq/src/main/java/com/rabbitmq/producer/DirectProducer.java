@@ -14,4 +14,8 @@ public class DirectProducer {
         this.messageSender = messageSender;
         this.properties = properties;
     }
+
+    public void sendMessage(String message) {
+        messageSender.sendMessage(properties.getDirect().getExchange(), properties.getDirect().getRoutingKey(), message);
+    }
 }
