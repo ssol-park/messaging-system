@@ -10,7 +10,11 @@ import org.springframework.util.ErrorHandler;
 public class CustomErrorHandler implements ErrorHandler {
     @Override
     public void handleError(Throwable t) {
-        log.error("@@@@@@@@@@@@@@@@@@@@@@@ ERROR :: {}", t.getMessage());
+
+        log.error("####################### handleError #######################");
+        log.error("[CustomErrorHandler] :: {}", t.getMessage());
+        log.error("###########################################################");
+
         t.printStackTrace();
 
         // 상태 처리

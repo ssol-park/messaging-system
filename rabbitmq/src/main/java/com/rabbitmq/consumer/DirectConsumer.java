@@ -11,7 +11,7 @@ import java.util.concurrent.TimeoutException;
 public class DirectConsumer {
     @RabbitListener(queues =  "direct-queue")
     public void receiveMessage(String message) throws TimeoutException {
-        log.info("[DirectConsumer] ###### START {}", message);
+        log.info("[DirectConsumer] ########### START {} ###########", message);
 
         if(true) {
             throw new TimeoutException("ERROR TEST :: " + System.currentTimeMillis());

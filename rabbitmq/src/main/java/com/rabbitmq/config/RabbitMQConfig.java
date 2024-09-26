@@ -2,35 +2,24 @@ package com.rabbitmq.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
-import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.retry.RetryPolicy;
-import org.springframework.retry.backoff.FixedBackOffPolicy;
-import org.springframework.retry.policy.ExceptionClassifierRetryPolicy;
-import org.springframework.retry.policy.SimpleRetryPolicy;
-import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import java.net.SocketTimeoutException;
-import java.rmi.ConnectIOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Configuration
 public class RabbitMQConfig {
+
+    public static final String DLX_EXCHANGE = "dlx-exchange";
+    public static final String DLX_QUEUE = "dlx-queue";
+    public static final String DLX_ROUTING_KEY = "dlx-routing-key";
 
     private final RabbitMQProperties rabbitMQProperties;
     private final CustomErrorHandler customErrorHandler;
@@ -53,12 +42,31 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue directQueue() {
-        return new Queue(rabbitMQProperties.getDirect().getQueue(), true);
+        return QueueBuilder.durable(rabbitMQProperties.getDirect().getQueue())
+                .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", DLX_ROUTING_KEY)
+                .build();
     }
 
     @Bean
     public Binding directBinding(DirectExchange directExchange, Queue directQueue) {
         return BindingBuilder.bind(directQueue).to(directExchange).with(rabbitMQProperties.getDirect().getRoutingKey());
+    }
+
+    // DLX
+
+    @Bean
+    public DirectExchange dlxExchange() {
+        return new DirectExchange(DLX_EXCHANGE);
+    }
+    @Bean
+    public Queue dlxQueue() {
+        return new Queue(DLX_QUEUE, true);
+    }
+
+    @Bean
+    public Binding bindingDlxQueue(DirectExchange dlxExchange, Queue dlxQueue) {
+        return BindingBuilder.bind(dlxQueue).to(dlxExchange).with(DLX_ROUTING_KEY);
     }
 
     @Bean
