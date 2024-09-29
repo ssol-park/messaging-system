@@ -2,16 +2,24 @@ package com.rabbitmq.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.time.Duration;
 
 @Slf4j
 @Configuration
@@ -105,6 +113,7 @@ public class RabbitMQConfig {
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, Jackson2JsonMessageConverter jsonMessageConverter) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jsonMessageConverter);
+
         return rabbitTemplate;
     }
 
@@ -160,6 +169,15 @@ public class RabbitMQConfig {
 
         // 13. Consumer 태그 설정 (기본값: 자동 생성)
 //        factory.setConsumerTagStrategy(queue -> "MyConsumerTag_" + queue); // 각 소비자에 대해 고유한 태그 부여
+
+
+        factory.setAdviceChain(
+                RetryInterceptorBuilder.stateless()
+                        .maxAttempts(3) // 최초 시도 1회 + 재시도 2회
+                        .backOffOptions(Duration.ofSeconds(3L).toMillis(), 2, Duration.ofSeconds(10L).toMillis()) // Exponential Backoff
+                        .recoverer(new RejectAndDontRequeueRecoverer()) // 재시도가 모두 실패 시 해당 예외를 발생시켜 DLX 로 전달
+                        .build()
+        );
 
 
         return factory;
