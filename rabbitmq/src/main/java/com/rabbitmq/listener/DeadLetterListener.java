@@ -12,9 +12,7 @@ public class DeadLetterListener {
 
     @RabbitListener(queues = RabbitMQConfig.DLX_QUEUE)
     public void handleDeadLetter(Message message) {
-        log.info("@@@@@@@@@@ handleDeadLetter @@@@@@@@@@");
-        log.info("message :: {}", message);
-        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        log.info("[DeadLetterListener] handleDeadLetter :: {}", message);
     }
 
 }
