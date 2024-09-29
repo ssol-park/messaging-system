@@ -13,6 +13,9 @@ spring:
       queue: direct-queue
       routing-key: direct-routing-key
 
+retry:
+  exceptions:
+    - java.util.concurrent.TimeoutException
 
 logging:
   level:
