@@ -76,8 +76,9 @@ public class RabbitMQConfig {
     @Bean
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
-        connectionFactory.setHost(rabbitMQProperties.getHost());
-        connectionFactory.setPort(rabbitMQProperties.getPort());
+        connectionFactory.setAddresses(rabbitMQProperties.getAddresses());
+//        connectionFactory.setHost(rabbitMQProperties.getHost());
+//        connectionFactory.setPort(rabbitMQProperties.getPort());
         connectionFactory.setUsername(rabbitMQProperties.getUsername());
         connectionFactory.setPassword(rabbitMQProperties.getPassword());
 
@@ -119,7 +120,7 @@ public class RabbitMQConfig {
         taskExecutor.setCorePoolSize(20);  // 기본 스레드 수
         taskExecutor.setMaxPoolSize(20);   // 최대 스레드 수
         taskExecutor.setQueueCapacity(100);  // 대기 큐 용량
-        taskExecutor.setThreadNamePrefix("RabbitMQ-Executor-");  // 스레드 이름 접두사
+        taskExecutor.setThreadNamePrefix("RabbitMQ-Executor-");
         taskExecutor.initialize();
         return taskExecutor;
     }
@@ -174,7 +175,6 @@ public class RabbitMQConfig {
                         .recoverer(new RejectAndDontRequeueRecoverer()) // 재시도가 모두 실패 시 해당 예외를 발생시켜 DLX 로 전달
                         .build()
         );
-
 
         return factory;
     }

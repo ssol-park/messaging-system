@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "spring.rabbitmq")
 public class RabbitMQProperties {
 
+    private final String addresses;
     private final String host;
     private final int port;
     private final String username;
