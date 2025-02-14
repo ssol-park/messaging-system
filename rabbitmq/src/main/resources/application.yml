@@ -3,6 +3,7 @@ spring:
     active: default
 
   rabbitmq:
+    addresses: rabbitmq1,rabbitmq2,rabbitmq3
     host: localhost
     port: 5672
     username: guest
