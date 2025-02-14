@@ -6,10 +6,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 @RestController
 @RequestMapping("/messages")
 public class MessageController {
     private final DirectProducer directProducer;
+    private AtomicInteger counter = new AtomicInteger(0);
 
     public MessageController(DirectProducer directProducer) {
         this.directProducer = directProducer;
@@ -17,7 +20,7 @@ public class MessageController {
 
     @GetMapping("/direct")
     public String sendDirectMessage(@RequestParam(value = "message") String message) {
-        directProducer.sendMessage(message);
+        directProducer.sendMessage(message + counter.incrementAndGet());
         return message;
     }
 }
