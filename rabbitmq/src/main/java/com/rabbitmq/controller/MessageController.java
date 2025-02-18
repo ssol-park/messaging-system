@@ -23,4 +23,10 @@ public class MessageController {
         directProducer.sendMessage(message + counter.incrementAndGet());
         return message;
     }
+
+    @GetMapping("/delay")
+    public String sendDelayMessage(@RequestParam(value = "message") String message) {
+        directProducer.sendDelayMessage(message + counter.incrementAndGet());
+        return message;
+    }
 }
