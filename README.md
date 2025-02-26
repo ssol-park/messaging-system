@@ -29,6 +29,8 @@
      - rabbitmqctl cluster_status 혹은 GUI 확인
    ```
 
--- TODO
- #### HA 설정
+ #### Ref
+ - https://www.rabbitmq.com/docs
+ - https://www.rabbitmq.com/docs/3.13/ha
+ - https://www.rabbitmq.com/docs/parameters#policies
  
