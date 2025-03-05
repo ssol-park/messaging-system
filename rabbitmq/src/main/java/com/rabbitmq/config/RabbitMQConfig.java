@@ -47,6 +47,7 @@ public class RabbitMQConfig {
     @Bean
     public Queue directQueue() {
         return QueueBuilder.durable(rabbitMQProperties.getDirect().getQueue())
+                .withArgument("x-queue-type", "quorum")
                 .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", DLX_ROUTING_KEY)
                 .build();
@@ -58,7 +59,6 @@ public class RabbitMQConfig {
     }
 
     // DLX
-
     @Bean
     public DirectExchange dlxExchange() {
         return new DirectExchange(DLX_EXCHANGE);
@@ -77,26 +77,8 @@ public class RabbitMQConfig {
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
         connectionFactory.setAddresses(rabbitMQProperties.getAddresses());
-//        connectionFactory.setHost(rabbitMQProperties.getHost());
-//        connectionFactory.setPort(rabbitMQProperties.getPort());
         connectionFactory.setUsername(rabbitMQProperties.getUsername());
         connectionFactory.setPassword(rabbitMQProperties.getPassword());
-
-        /*
-        // TLS/SSL 설정
-        try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keyStore.load(null, null);
-            trustManagerFactory.init(keyStore);
-            sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
-            connectionFactory.getRabbitConnectionFactory().useSslProtocol(sslContext);
-            connectionFactory.setPort(5671);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        */
 
         return connectionFactory;
     }
